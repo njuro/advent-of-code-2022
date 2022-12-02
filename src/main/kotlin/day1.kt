@@ -1,7 +1,7 @@
 import utils.readInputBlock
 
 /** [https://adventofcode.com/2021/day/1] */
-class Day1 : AdventOfCodeTask {
+class Snacks : AdventOfCodeTask {
     override fun run(part2: Boolean): Any {
         return readInputBlock("1.txt")
             .split("\n\n")
@@ -11,5 +11,5 @@ class Day1 : AdventOfCodeTask {
 }
 
 fun main() {
-    print(Day1().run(part2 = true))
+    print(Snacks().run(part2 = true))
 }

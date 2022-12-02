@@ -5,7 +5,12 @@ class AdventOfCodeTasksTest {
 
     @Test
     fun day01() {
-        runTaskTest(Day1(), 70613, 205805)
+        runTaskTest(Snacks(), 70613, 205805)
+    }
+
+    @Test
+    fun day02() {
+        runTaskTest(Weapons(), 11906, 11186)
     }
 
     private fun runTaskTest(task: AdventOfCodeTask, part1Result: Any, part2Result: Any) {

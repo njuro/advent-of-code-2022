@@ -2,17 +2,16 @@ import utils.readInputLines
 
 /** [https://adventofcode.com/2021/day/7] */
 class Files : AdventOfCodeTask {
-    sealed class Node(open val name: String) {
+    sealed class Node {
         lateinit var parent: Directory
-
         abstract fun getTotalSize(): Int
     }
 
-    data class File(override val name: String, val size: Int) : Node(name) {
+    data class File(val size: Int) : Node() {
         override fun getTotalSize(): Int = size
     }
 
-    data class Directory(override val name: String, val children: MutableSet<Node> = mutableSetOf()) : Node(name) {
+    data class Directory(val name: String, val children: MutableSet<Node> = mutableSetOf()) : Node() {
         override fun getTotalSize(): Int = children.sumOf(Node::getTotalSize)
     }
 
@@ -30,7 +29,7 @@ class Files : AdventOfCodeTask {
                 }
             } else {
                 val (meta, name) = tokens
-                val child = if (meta == "dir") Directory(name) else File(name, meta.toInt())
+                val child = if (meta == "dir") Directory(name) else File(meta.toInt())
                 current.children.add(child.apply { parent = current })
             }
         }

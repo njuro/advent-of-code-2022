@@ -4,15 +4,16 @@ import utils.readInputLines
 class Files : AdventOfCodeTask {
     sealed class Node {
         lateinit var parent: Directory
-        abstract fun getTotalSize(): Int
+        abstract val totalSize: Int
     }
 
     data class File(val size: Int) : Node() {
-        override fun getTotalSize(): Int = size
+        override val totalSize: Int = size
     }
 
     data class Directory(val name: String, val children: MutableSet<Node> = mutableSetOf()) : Node() {
-        override fun getTotalSize(): Int = children.sumOf(Node::getTotalSize)
+        override val totalSize: Int
+            get() = children.sumOf(Node::totalSize)
     }
 
     override fun run(part2: Boolean): Any {
@@ -35,18 +36,18 @@ class Files : AdventOfCodeTask {
         }
 
         val predicate = { size: Int ->
-            if (part2) size >= 30000000 - (70000000 - root.getTotalSize()) else size <= 100000
+            if (part2) size >= 30000000 - (70000000 - root.totalSize) else size <= 100000
         }
 
         fun traverse(current: Directory = root, selected: MutableSet<Directory> = mutableSetOf()): Set<Directory> {
-            if (predicate(current.getTotalSize())) {
+            if (predicate(current.totalSize)) {
                 selected.add(current)
             }
             current.children.filterIsInstance<Directory>().forEach { traverse(it, selected) }
             return selected
         }
 
-        return traverse().map(Node::getTotalSize).let { if (part2) it.min() else it.sum() }
+        return traverse().map(Node::totalSize).let { if (part2) it.min() else it.sum() }
     }
 }
 

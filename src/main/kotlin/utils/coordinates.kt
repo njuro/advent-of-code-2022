@@ -68,23 +68,23 @@ data class Coordinate(val x: Int, val y: Int) {
     }
 }
 
-fun Map<Coordinate, Char>.minX(): Int {
+fun Map<Coordinate, *>.minX(): Int {
     return minByOrNull { it.key.x }!!.key.x
 }
 
-fun Map<Coordinate, Char>.maxX(): Int {
+fun Map<Coordinate, *>.maxX(): Int {
     return maxByOrNull { it.key.x }!!.key.x
 }
 
-fun Map<Coordinate, Char>.minY(): Int {
+fun Map<Coordinate, *>.minY(): Int {
     return minByOrNull { it.key.y }!!.key.y
 }
 
-fun Map<Coordinate, Char>.maxY(): Int {
+fun Map<Coordinate, *>.maxY(): Int {
     return maxByOrNull { it.key.y }!!.key.y
 }
 
-fun Map<Coordinate, Char>.toStringRepresentation(offsetCoordinates: Boolean = false, separator: String = " "): String {
+fun Map<Coordinate, *>.toStringRepresentation(offsetCoordinates: Boolean = false, separator: String = " "): String {
     val map = StringBuilder()
 
     val yRange = if (offsetCoordinates) minY()..maxY() else maxY() downTo minY()

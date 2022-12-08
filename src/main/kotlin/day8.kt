@@ -6,7 +6,7 @@ class Trees : AdventOfCodeTask {
     override fun run(part2: Boolean): Any {
         val trees = readInputLines("8.txt").flatMapIndexed { y, row ->
             row.mapIndexed { x, height -> Coordinate(x, y) to Character.getNumericValue(height) }
-        }.toMap().withDefault { -1 }
+        }.toMap()
 
         data class TreePosition(val viewDistance: Int, val blocked: Boolean) {
             infix fun combineWith(other: TreePosition) =
@@ -21,8 +21,7 @@ class Trees : AdventOfCodeTask {
             generateSequence(initialCoordinate to TreePosition(0, false)) { (current, position) ->
                 val next = nextCoordinate(current)
                 next to TreePosition(position.viewDistance + 1, trees.getValue(next) >= height)
-            }.takeWhile { (current, _) -> current in trees }
-                .run { firstOrNull { (_, position) -> position.blocked } ?: last() }.second
+            }.first { (current, position) -> position.blocked || nextCoordinate(current) !in trees }.second
 
         return trees.map { (coordinate, height) ->
             val left = calculatePosition(coordinate, Coordinate::left, height)

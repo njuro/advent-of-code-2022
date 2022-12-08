@@ -1,6 +1,4 @@
 import utils.Coordinate
-import utils.maxX
-import utils.maxY
 import utils.readInputLines
 
 /** [https://adventofcode.com/2021/day/8] */
@@ -9,27 +7,44 @@ class Trees : AdventOfCodeTask {
         val trees = readInputLines("8.txt").flatMapIndexed { y, row ->
             row.mapIndexed { x, height -> Coordinate(x, y) to Character.getNumericValue(height) }
         }.toMap()
-        val maxX = trees.maxX()
-        val maxY = trees.maxY()
 
-        return trees.map { (pos, height) ->
-            val left =
-                (1..pos.x).firstOrNull { trees.getValue(Coordinate(pos.x - it, pos.y)) >= height }?.let { it to true }
-                    ?: (pos.x to false)
-            val right = (1..(maxX - pos.x)).firstOrNull { trees.getValue(Coordinate(pos.x + it, pos.y)) >= height }
-                ?.let { it to true } ?: (maxX - pos.x to false)
-            val down = (1..(maxY - pos.y)).firstOrNull { trees.getValue(Coordinate(pos.x, pos.y + it)) >= height }
-                ?.let { it to true } ?: (maxY - pos.y to false)
-            val up =
-                (1..pos.y).firstOrNull { trees.getValue(Coordinate(pos.x, pos.y - it)) >= height }?.let { it to true }
-                    ?: (pos.y to false)
-            setOf(left, right, down, up).reduce { d1, d2 ->
-                d1.first * d2.first to (d1.second && d2.second)
+        data class TreePosition(val viewDistance: Int, val hidden: Boolean) {
+            infix fun combineWith(other: TreePosition) =
+                TreePosition(viewDistance * other.viewDistance, hidden && other.hidden)
+        }
+
+        fun calculatePosition(coordinate: Coordinate, height: Int, moveFn: (Coordinate) -> Coordinate): TreePosition {
+            var viewDistance = 0
+            var hidden = false
+            var current = coordinate
+            while (true) {
+                val next = moveFn(current)
+                if (next !in trees) {
+                    break
+                }
+                if (trees.getValue(next) >= height) {
+                    viewDistance += 1
+                    hidden = true
+                    break
+                }
+                viewDistance += 1
+                current = next
             }
-        }.let { if (part2) it.maxOf { it.first } else it.count { !it.second } }
+
+            return TreePosition(viewDistance, hidden)
+        }
+
+        return trees.map { (coordinate, height) ->
+            val left = calculatePosition(coordinate, height, Coordinate::left)
+            val right = calculatePosition(coordinate, height, Coordinate::right)
+            val down = calculatePosition(coordinate, height, Coordinate::up)
+            val up = calculatePosition(coordinate, height, Coordinate::down)
+
+            listOf(left, right, down, up).reduce { pos1, pos2 -> pos1 combineWith pos2 }
+        }.run { if (part2) maxOf { it.viewDistance } else count { !it.hidden } }
     }
 }
 
 fun main() {
-    print(Trees().run(part2 = false))
+    print(Trees().run(part2 = true))
 }

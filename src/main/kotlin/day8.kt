@@ -9,7 +9,7 @@ class Trees : AdventOfCodeTask {
         }.toMap()
 
         data class TreePosition(val viewDistance: Int, val blocked: Boolean) {
-            infix fun combineWith(other: TreePosition) =
+            fun combine(other: TreePosition) =
                 TreePosition(viewDistance * other.viewDistance, blocked && other.blocked)
         }
 
@@ -24,12 +24,12 @@ class Trees : AdventOfCodeTask {
             }.first { (current, position) -> position.blocked || nextCoordinate(current) !in trees }.second
 
         return trees.map { (coordinate, height) ->
-            val left = calculatePosition(coordinate, Coordinate::left, height)
-            val right = calculatePosition(coordinate, Coordinate::right, height)
-            val down = calculatePosition(coordinate, Coordinate::up, height)
-            val up = calculatePosition(coordinate, Coordinate::down, height)
-
-            listOf(left, right, down, up).reduce { pos1, pos2 -> pos1 combineWith pos2 }
+            listOf(
+                calculatePosition(coordinate, Coordinate::left, height),
+                calculatePosition(coordinate, Coordinate::right, height),
+                calculatePosition(coordinate, Coordinate::up, height),
+                calculatePosition(coordinate, Coordinate::down, height)
+            ).reduce(TreePosition::combine)
         }.run { if (part2) maxOf { it.viewDistance } else count { !it.blocked } }
     }
 }

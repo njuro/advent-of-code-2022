@@ -2,29 +2,31 @@ import utils.Coordinate
 import utils.readInputLines
 
 /** [https://adventofcode.com/2021/day/9] */
-class Day9 : AdventOfCodeTask {
+class Ropes : AdventOfCodeTask {
     override fun run(part2: Boolean): Any {
-        var head = Coordinate(0, 0)
-        var tail = Coordinate(0, 0)
-        val visited = mutableSetOf(tail)
+        val rope = Array(if (part2) 10 else 2) { Coordinate(0, 0) }.toMutableList()
+        val visited = mutableSetOf(Coordinate(0, 0))
 
         readInputLines("9.txt").map { row -> row.split(" ").let { it[0] to it[1].toInt() } }
             .forEach { (direction, steps) ->
                 repeat(steps) {
-                    head = when (direction) {
-                        "R" -> head.right()
-                        "L" -> head.left()
-                        "D" -> head.down()
-                        "U" -> head.up()
+                    rope[0] = when (direction) {
+                        "R" -> rope[0].right()
+                        "L" -> rope[0].left()
+                        "D" -> rope[0].down()
+                        "U" -> rope[0].up()
                         else -> error("Illegal direction $direction")
                     }
-                    val touching = head.adjacent8().toSet() + head
-                    if (tail !in touching) {
-                        val candidates =
-                            if (tail.x == head.x || tail.y == head.y) tail.adjacent().values else tail.adjacentDiagonally()
-                        tail = candidates.first { it in touching }
-                        visited.add(tail)
+
+                    rope.indices.zipWithNext { prev, next ->
+                        val touching = rope[prev].adjacent8().toSet() + rope[prev]
+                        if (rope[next] !in touching) {
+                            val candidates =
+                                if (rope[next].x == rope[prev].x || rope[next].y == rope[prev].y) rope[next].adjacent().values else rope[next].adjacentDiagonally()
+                            rope[next] = candidates.first { it in touching }
+                        }
                     }
+                    visited.add(rope.last())
                 }
             }
 
@@ -33,5 +35,5 @@ class Day9 : AdventOfCodeTask {
 }
 
 fun main() {
-    print(Day9().run(part2 = false))
+    print(Ropes().run(part2 = true))
 }

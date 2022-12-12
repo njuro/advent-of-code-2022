@@ -78,12 +78,12 @@ class Day11 : AdventOfCodeTask {
         fun Monkey.turn() {
             while (items.isNotEmpty()) {
                 inspectCount += 1
-                val worryLevel = floor(operation(items.removeFirst()) / 3.0).toLong()
+                val worryLevel = operation(items.removeFirst()).let { if (part2) it else floor(it / 3.0).toLong() }
                 monkeys[test(worryLevel)].items.add(worryLevel)
             }
         }
 
-        repeat(20) {
+        repeat(if (part2) 10_000 else 20) {
             monkeys.forEach { it.turn() }
         }
 

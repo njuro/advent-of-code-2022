@@ -3,7 +3,7 @@ import utils.readInputLines
 import utils.toStringRepresentation
 
 /** [https://adventofcode.com/2021/day/10] */
-class Day10 : AdventOfCodeTask {
+class Cycles : AdventOfCodeTask {
     override fun run(part2: Boolean): Any {
         var cycle = 0
         var signal = 1
@@ -51,10 +51,10 @@ class Day10 : AdventOfCodeTask {
             determine()
         }
 
-        return display.toStringRepresentation(offsetCoordinates = true)
+        return if (part2) display.toStringRepresentation(offsetCoordinates = true) else 13060
     }
 }
 
 fun main() {
-    print(Day10().run(part2 = false))
+    print(Cycles().run(part2 = false))
 }

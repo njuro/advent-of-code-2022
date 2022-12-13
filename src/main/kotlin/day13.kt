@@ -15,22 +15,14 @@ class Signals : AdventOfCodeTask {
             return when {
                 left is JsonPrimitive && right is JsonPrimitive -> left.int.compareTo(right.int)
                 left is JsonArray && right is JsonArray -> {
-                    var index = 0
-                    while (true) {
-                        if (index >= left.size && index >= right.size) {
-                            return 0
-                        }
-                        if (index >= right.size) {
-                            return 1
-                        }
-                        if (index >= left.size) {
-                            return -1
-                        }
-                        val valueResult = checkOrder(left[index], right[index])
-                        if (valueResult != 0) {
-                            return valueResult
-                        }
-                        index++
+                    val leftIterator = left.iterator()
+                    val rightIterator = right.iterator()
+                    while (leftIterator.hasNext() || rightIterator.hasNext()) {
+                        if (!rightIterator.hasNext()) return 1
+                        if (!leftIterator.hasNext()) return -1
+
+                        val valueComparison = checkOrder(leftIterator.next(), rightIterator.next())
+                        if (valueComparison != 0) return valueComparison
                     }
                     return 0
                 }

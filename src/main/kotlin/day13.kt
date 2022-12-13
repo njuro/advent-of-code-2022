@@ -11,7 +11,7 @@ class Signals : AdventOfCodeTask {
     override fun run(part2: Boolean): Any {
         fun JsonElement.coerceToArray(): JsonArray = if (this is JsonArray) this else JsonArray(listOf(this))
 
-        fun checkOrder(left: JsonElement, right: JsonElement): Int {
+        fun compareJson(left: JsonElement, right: JsonElement): Int {
             return when {
                 left is JsonPrimitive && right is JsonPrimitive -> left.int.compareTo(right.int)
                 left is JsonArray && right is JsonArray -> {
@@ -21,23 +21,23 @@ class Signals : AdventOfCodeTask {
                         if (!rightIterator.hasNext()) return 1
                         if (!leftIterator.hasNext()) return -1
 
-                        val valueComparison = checkOrder(leftIterator.next(), rightIterator.next())
+                        val valueComparison = compareJson(leftIterator.next(), rightIterator.next())
                         if (valueComparison != 0) return valueComparison
                     }
                     return 0
                 }
 
-                else -> checkOrder(left.coerceToArray(), right.coerceToArray())
+                else -> compareJson(left.coerceToArray(), right.coerceToArray())
             }
         }
 
-        operator fun JsonElement.compareTo(other: JsonElement) = checkOrder(this, other)
+        operator fun JsonElement.compareTo(other: JsonElement) = compareJson(this, other)
 
         return readInputLines("13.txt").filter(String::isNotBlank).map<String, JsonElement>(Json::decodeFromString)
             .run {
                 if (part2) {
                     val dividers = listOf("[[2]]", "[[6]]").map<String, JsonElement>(Json::decodeFromString)
-                    toMutableList().apply { addAll(dividers) }.sortedWith(::checkOrder)
+                    toMutableList().apply { addAll(dividers) }.sortedWith(::compareJson)
                         .let { list -> dividers.map { list.indexOf(it) + 1 }.reduce(Int::times) }
                 } else {
                     chunked(2).mapIndexedNotNull { index, (left, right) ->

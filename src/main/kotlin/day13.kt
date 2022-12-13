@@ -4,78 +4,55 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int
-import utils.readInputBlock
 import utils.readInputLines
 
 /** [https://adventofcode.com/2021/day/13] */
 class Signals : AdventOfCodeTask {
-    enum class Result { IN_ORDER, OUT_OF_ORDER, INDECISIVE }
-
     override fun run(part2: Boolean): Any {
         fun JsonElement.coerceToArray(): JsonArray = if (this is JsonArray) this else JsonArray(listOf(this))
 
-        fun checkOrder(left: JsonElement, right: JsonElement): Result {
-            println("Comparing $left vs $right")
+        fun checkOrder(left: JsonElement, right: JsonElement): Int {
             return when {
-                left is JsonPrimitive && right is JsonPrimitive -> {
-                    when {
-                        left.int < right.int -> Result.IN_ORDER
-                        left.int > right.int -> Result.OUT_OF_ORDER
-                        else -> Result.INDECISIVE
-                    }
-                }
-
+                left is JsonPrimitive && right is JsonPrimitive -> left.int.compareTo(right.int)
                 left is JsonArray && right is JsonArray -> {
                     var index = 0
                     while (true) {
                         if (index >= left.size && index >= right.size) {
-                            return Result.INDECISIVE
+                            return 0
                         }
                         if (index >= right.size) {
-                            return Result.OUT_OF_ORDER
+                            return 1
                         }
                         if (index >= left.size) {
-                            return Result.IN_ORDER
+                            return -1
                         }
                         val valueResult = checkOrder(left[index], right[index])
-                        if (valueResult != Result.INDECISIVE) {
+                        if (valueResult != 0) {
                             return valueResult
                         }
                         index++
                     }
-                    return Result.INDECISIVE
+                    return 0
                 }
 
                 else -> checkOrder(left.coerceToArray(), right.coerceToArray())
             }
         }
 
+        operator fun JsonElement.compareTo(other: JsonElement) = checkOrder(this, other)
 
-        if (!part2) {
-            return readInputBlock("13.txt").split("\n\n").map { it.lines() }
-                .mapIndexedNotNull { index, (left, right) ->
-                    println("PAIR ${index + 1}")
-                    if (checkOrder(
-                            Json.decodeFromString(left),
-                            Json.decodeFromString(right)
-                        ) != Result.OUT_OF_ORDER
-                    ) index + 1 else null
-                }.sum()
-        }
-
-        val comparator: Comparator<JsonElement> = Comparator { e1, e2 ->
-            when (checkOrder(e1, e2)) {
-                Result.IN_ORDER -> -1
-                Result.OUT_OF_ORDER -> 1
-                Result.INDECISIVE -> 0
+        return readInputLines("13.txt").filter(String::isNotBlank).map<String, JsonElement>(Json::decodeFromString)
+            .run {
+                if (part2) {
+                    val dividers = listOf("[[2]]", "[[6]]").map<String, JsonElement>(Json::decodeFromString)
+                    toMutableList().apply { addAll(dividers) }.sortedWith(::checkOrder)
+                        .let { list -> dividers.map { list.indexOf(it) + 1 }.reduce(Int::times) }
+                } else {
+                    chunked(2).mapIndexedNotNull { index, (left, right) ->
+                        if (left <= right) index + 1 else null
+                    }.sum()
+                }
             }
-        }
-        val dividers: List<JsonElement> = listOf("[[2]]", "[[6]]").map(Json::decodeFromString)
-        return readInputLines("13.txt").filter { it.isNotBlank() }
-            .map<String, JsonElement> { Json.decodeFromString(it) }.toMutableList().apply {
-            addAll(dividers)
-        }.sortedWith(comparator).let { (it.indexOf(dividers.first()) + 1) * (it.indexOf(dividers.last()) + 1) }
-
     }
 }
 

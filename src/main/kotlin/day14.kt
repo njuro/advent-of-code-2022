@@ -1,7 +1,5 @@
 import utils.Coordinate
-import utils.maxX
 import utils.maxY
-import utils.minX
 import utils.readInputLines
 import java.lang.Integer.max
 import java.lang.Integer.min
@@ -25,14 +23,11 @@ class Sand : AdventOfCodeTask {
 
         val start = Coordinate(500, 0)
         val floor = if (part2) map.maxY() + 2 else map.maxY()
-        if (part2) {
-            // TODO nasty hack
-            (map.minX() - 1000..map.maxX() + 1000).forEach { map[Coordinate(it, floor)] = '#' }
-        }
         fun Coordinate.candidates() = listOf(copy(y = y + 1), copy(x = x - 1, y = y + 1), copy(x = x + 1, y = y + 1))
+        fun Coordinate.isAvailable(): Boolean = if (part2 && y == floor) false else map.getValue(this) == '.'
         fun generateSand(): Coordinate? =
             generateSequence(start) { current ->
-                current.candidates().firstOrNull { it.y <= floor && map.getValue(it) == '.' }
+                current.candidates().firstOrNull { it.y <= floor && it.isAvailable() }
             }.last().takeIf { it.y < floor }
 
         do {

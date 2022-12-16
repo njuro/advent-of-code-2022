@@ -1,75 +1,63 @@
 import utils.readInputLines
+import java.util.PriorityQueue
 
 /** [https://adventofcode.com/2021/day/16] */
 class Day16 : AdventOfCodeTask {
     override fun run(part2: Boolean): Any {
         data class Valve(val label: String, val flowRate: Int, val tunnels: Set<String>)
-        data class State(
-            val minute: Int,
-            val valve: String,
-            val opening: Boolean,
-            val opened: Set<String>,
-            val flowRate: Int,
-            val totalFlow: Int
-        )
 
         val pattern = Regex("Valve (\\w+) has flow rate=(\\d+); tunnels? leads? to valves? (.+)")
+
         val valves = readInputLines("16.txt").map {
             val (label, flowRate, tunnels) = pattern.matchEntire(it)!!.destructured
             Valve(label, flowRate.toInt(), tunnels.split(", ").toSet())
         }.associateBy { it.label }
 
-        val queue = mutableSetOf(
-            State(
-                minute = 1,
-                valve = "AA",
-                opening = false,
-                opened = emptySet(),
-                flowRate = 0,
-                totalFlow = 0
-            )
-        )
+        val valuable = valves.values.filter { it.flowRate > 0 }.map { it.label }
+        fun distanceMap(start: String): Map<String, Int> {
+            val queue = PriorityQueue<Pair<String, Int>> { p1, p2 -> p1.second - p2.second }.apply { offer(start to 0) }
+            val seen = mutableSetOf(start)
+            val distanceMap = mutableMapOf<String, Int>()
+            while (queue.isNotEmpty()) {
+                val (current, minutes) = queue.poll()
+                if (current in valuable) {
+                    distanceMap[current] = minutes
+                }
+
+                valves.getValue(current).tunnels.filter { it !in seen }.forEach {
+                    seen.add(it)
+                    queue.offer(it to minutes + 1)
+                }
+            }
+
+            return distanceMap
+        }
+
+        val distances = (valuable + "AA").associateWith { distanceMap(it) }
+
+        data class State(val minute: Int, val valve: String, val opened: Map<String, Int>)
+
+        val queue = mutableListOf(State(minute = 0, valve = "AA", opened = emptyMap()))
         val results = mutableSetOf<Int>()
         while (queue.isNotEmpty()) {
-            val current = queue.first().also { queue.remove(it) }
-            val valve = valves.getValue(current.valve)
+            val current = queue.removeFirst()
+            val candidates = distances.getValue(current.valve)
+                .filter { (valve, distance) -> valve !in current.opened && current.minute + distance < 30 }
+            if (candidates.isEmpty()) {
+                var totalFlow = 0
+                current.opened.forEach { (valve, openedAt) ->
+                    totalFlow += valves.getValue(valve).flowRate * (30 - openedAt)
+                }
 
-            val nextTotalFlow = current.totalFlow + current.flowRate
-            var nextFlowRate = current.flowRate
-            val nextOpened = current.opened.toMutableSet()
-
-            if (current.minute > 30) {
-                results.add(nextTotalFlow)
-                continue
+                results.add(totalFlow)
             }
-
-            if (current.opening) {
-                nextOpened.add(current.valve)
-                nextFlowRate += valve.flowRate
-            }
-
-            if (!current.opening && current.valve !in current.opened && valve.flowRate > 0) {
+            candidates.forEach { (nextValve, distance) ->
+                val nextMinute = current.minute + distance + 1
                 queue.add(
                     State(
-                        minute = current.minute + 1,
-                        valve = current.valve,
-                        opening = true,
-                        opened = nextOpened,
-                        flowRate = nextFlowRate,
-                        totalFlow = nextTotalFlow
-                    )
-                )
-            }
-
-            valve.tunnels.forEach { nextValve ->
-                queue.add(
-                    State(
-                        minute = current.minute + 1,
+                        minute = nextMinute,
                         valve = nextValve,
-                        opening = false,
-                        opened = nextOpened,
-                        flowRate = nextFlowRate,
-                        totalFlow = nextTotalFlow
+                        opened = current.opened + (nextValve to nextMinute)
                     )
                 )
             }

@@ -2,7 +2,7 @@ import utils.readInputLines
 import kotlin.math.max
 
 /** [https://adventofcode.com/2021/day/19] */
-class Day19 : AdventOfCodeTask {
+class Ores : AdventOfCodeTask {
     override fun run(part2: Boolean): Any {
         data class Blueprint(
             val id: Int,
@@ -69,6 +69,7 @@ class Day19 : AdventOfCodeTask {
                             clay = nextInventory.clay - obsidianCost.second
                         )
                     )
+                    if (part2) continue // TODO nasty hack
                 }
 
                 if (inventory.ore >= clayCost) {
@@ -92,7 +93,6 @@ class Day19 : AdventOfCodeTask {
                 queue.add(minute + 1 to nextInventory)
             }
 
-            println("Blueprint ${id} can open $maxGeode geodes")
             return maxGeode
         }
 
@@ -102,5 +102,5 @@ class Day19 : AdventOfCodeTask {
 }
 
 fun main() {
-    print(Day19().run(part2 = false))
+    print(Ores().run(part2 = true))
 }

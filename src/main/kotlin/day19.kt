@@ -34,6 +34,10 @@ class Day19 : AdventOfCodeTask {
             while (queue.isNotEmpty()) {
                 val (minute, inventory) = queue.first().also { queue.remove(it) }
 
+                if (inventory.geode + (24 - minute) <= maxGeode) {
+                    continue
+                }
+
                 if (minute == 24) {
                     maxGeode = max(maxGeode, inventory.geode)
                     continue
@@ -54,6 +58,7 @@ class Day19 : AdventOfCodeTask {
                             obsidian = nextInventory.obsidian - blueprint.geodeCost.second
                         )
                     )
+                    continue
                 }
 
                 if (inventory.ore >= blueprint.obsidianCost.first && inventory.clay >= blueprint.obsidianCost.second) {

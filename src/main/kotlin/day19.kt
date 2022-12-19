@@ -28,17 +28,17 @@ class Day19 : AdventOfCodeTask {
             val geode: Int = 0
         )
 
-        return blueprints.sumOf { blueprint ->
+        fun Blueprint.maxGeodes(limit: Int): Int {
             var maxGeode = 0
             val queue = mutableSetOf(0 to Inventory())
             while (queue.isNotEmpty()) {
                 val (minute, inventory) = queue.first().also { queue.remove(it) }
 
-                if (inventory.geode + (24 - minute) <= maxGeode) {
+                if (inventory.geode + (limit - minute) <= maxGeode) {
                     continue
                 }
 
-                if (minute == 24) {
+                if (minute == limit) {
                     maxGeode = max(maxGeode, inventory.geode)
                     continue
                 }
@@ -50,41 +50,41 @@ class Day19 : AdventOfCodeTask {
                     geode = inventory.geode + inventory.geodeRobots
                 )
 
-                if (inventory.ore >= blueprint.geodeCost.first && inventory.obsidian >= blueprint.geodeCost.second) {
+                if (inventory.ore >= geodeCost.first && inventory.obsidian >= geodeCost.second) {
                     queue.add(
                         minute + 1 to nextInventory.copy(
                             geodeRobots = nextInventory.geodeRobots + 1,
-                            ore = nextInventory.ore - blueprint.geodeCost.first,
-                            obsidian = nextInventory.obsidian - blueprint.geodeCost.second
+                            ore = nextInventory.ore - geodeCost.first,
+                            obsidian = nextInventory.obsidian - geodeCost.second
                         )
                     )
                     continue
                 }
 
-                if (inventory.ore >= blueprint.obsidianCost.first && inventory.clay >= blueprint.obsidianCost.second) {
+                if (inventory.ore >= obsidianCost.first && inventory.clay >= obsidianCost.second) {
                     queue.add(
                         minute + 1 to nextInventory.copy(
                             obsidianRobots = nextInventory.obsidianRobots + 1,
-                            ore = nextInventory.ore - blueprint.obsidianCost.first,
-                            clay = nextInventory.clay - blueprint.obsidianCost.second
+                            ore = nextInventory.ore - obsidianCost.first,
+                            clay = nextInventory.clay - obsidianCost.second
                         )
                     )
                 }
 
-                if (inventory.ore >= blueprint.clayCost) {
+                if (inventory.ore >= clayCost) {
                     queue.add(
                         minute + 1 to nextInventory.copy(
                             clayRobots = nextInventory.clayRobots + 1,
-                            ore = nextInventory.ore - blueprint.clayCost
+                            ore = nextInventory.ore - clayCost
                         )
                     )
                 }
 
-                if (inventory.ore >= blueprint.oreCost) {
+                if (inventory.ore >= oreCost) {
                     queue.add(
                         minute + 1 to nextInventory.copy(
                             oreRobots = nextInventory.oreRobots + 1,
-                            ore = nextInventory.ore - blueprint.oreCost
+                            ore = nextInventory.ore - oreCost
                         )
                     )
                 }
@@ -92,9 +92,12 @@ class Day19 : AdventOfCodeTask {
                 queue.add(minute + 1 to nextInventory)
             }
 
-            println("Blueprint ${blueprint.id} can open $maxGeode geodes")
-            blueprint.id * maxGeode
+            println("Blueprint ${id} can open $maxGeode geodes")
+            return maxGeode
         }
+
+        return if (part2) blueprints.take(3).map { it.maxGeodes(32) }
+            .reduce(Int::times) else blueprints.sumOf { it.id * it.maxGeodes(24) }
     }
 }
 

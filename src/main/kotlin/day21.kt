@@ -4,35 +4,16 @@ import utils.readInputLines
 /** [https://adventofcode.com/2021/day/21] */
 class Equations : AdventOfCodeTask {
 
-    sealed class Node {
-        abstract fun evaluate(): Long
-    }
-
-    data class Equation(val left: Node, val right: Node, val operation: String) : Node() {
-        override fun evaluate(): Long {
-            val leftValue = left.evaluate()
-            val rightValue = right.evaluate()
-            return when (operation) {
-                "+" -> leftValue + rightValue
-                "-" -> leftValue - rightValue
-                "*" -> leftValue * rightValue
-                "/" -> leftValue / rightValue
-                else -> error("Invalid operation $operation")
-            }
-        }
-
+    interface Node
+    data class Equation(val left: Node, val right: Node, val operation: String) : Node {
         override fun toString(): String = "($left $operation $right)"
     }
 
-    data class Literal(val value: Long) : Node() {
-        override fun evaluate(): Long = value
-
+    data class Literal(val value: Long) : Node {
         override fun toString(): String = value.toString()
     }
 
-    data class Variable(val label: String) : Node() {
-        override fun evaluate(): Long = throw UnsupportedOperationException()
-
+    data class Variable(val label: String) : Node {
         override fun toString(): String = label
     }
 
@@ -58,12 +39,11 @@ class Equations : AdventOfCodeTask {
             return Equation(resolve(left), resolve(right), operation)
         }
 
-        val root = equations["root"]!!.toEquation()
-        return if (part2) {
-            val equation = root.copy(operation = "==").toString()
-            val result = ExprEvaluator().eval("Solve($equation,humn)")
-            result.toString().substringAfter("->").substringBefore("}}").toLong()
-        } else root.evaluate()
+        val equation = equations["root"]!!.toEquation().run { if (part2) copy(operation = "==") else this }.toString()
+        val result = ExprEvaluator().eval("Solve($equation,humn)")
+        return result.toString()
+            .run { if (part2) substringAfter("->").substringBefore("}}") else substringAfter("(").substringBefore(",") }
+            .toLong()
     }
 }
 

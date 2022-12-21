@@ -99,6 +99,11 @@ class AdventOfCodeTasksTest {
     }
 
     @Test
+    fun day20() {
+        runTaskTest(Numbers(), 14526L, 9738258246847)
+    }
+
+    @Test
     fun day21() {
         runTaskTest(Equations(), 169525884255464, 3247317268284)
     }

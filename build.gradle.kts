@@ -16,6 +16,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.4.1")
+    implementation("org.matheclipse:matheclipse-core:2.0.0")
     testImplementation(kotlin("test"))
 }
 

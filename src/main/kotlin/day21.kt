@@ -58,13 +58,12 @@ class Equations : AdventOfCodeTask {
             return Equation(resolve(left), resolve(right), operation)
         }
 
+        val root = equations["root"]!!.toEquation()
         return if (part2) {
-            val equation = equations["root"]!!.toEquation().copy(operation = "==").toString()
+            val equation = root.copy(operation = "==").toString()
             val result = ExprEvaluator().eval("Solve($equation,humn)")
             result.toString().substringAfter("->").substringBefore("}}").toLong()
-        } else {
-            equations["root"]!!.toEquation().evaluate()
-        }
+        } else root.evaluate()
     }
 }
 

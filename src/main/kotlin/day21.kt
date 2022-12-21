@@ -40,9 +40,9 @@ class Equations : AdventOfCodeTask {
         }
 
         val equation = equations["root"]!!.toEquation().run { if (part2) copy(operation = "==") else this }.toString()
-        val result = ExprEvaluator().eval("Solve($equation,humn)")
+        val result = ExprEvaluator().eval(if (part2) "Solve($equation,humn)" else equation)
         return result.toString()
-            .run { if (part2) substringAfter("->").substringBefore("}}") else substringAfter("(").substringBefore(",") }
+            .run { if (part2) substringAfter("->").substringBefore("}}") else this }
             .toLong()
     }
 }

@@ -41,35 +41,42 @@ class Day24 : AdventOfCodeTask {
         operator fun List<Blizzard>.contains(position: Coordinate): Boolean = any { it.position == position }
 
         val start = Coordinate(1, 0)
-        val target = Coordinate(maxX - 1, maxY - 1)
-        val queue =
-            PriorityQueue<Pair<Coordinate, Int>> { p1, p2 -> p1.second - p2.second }.apply { offer(start to 0) }
+        val target = Coordinate(maxX - 1, maxY)
+
+        data class State(val position: Coordinate, val steps: Int, val phase: Int)
+
+        val initial = State(start, 0, 0)
+        val queue = PriorityQueue<State> { p1, p2 -> p1.steps - p2.steps }.apply { offer(initial) }
         val cache = mutableListOf(blizzards.move())
-        val seen = mutableSetOf(start to 0)
+        val seen = mutableSetOf(initial)
         while (queue.isNotEmpty()) {
-            val (current, steps) = queue.poll()
-            if (current == target) {
-                return steps + 1
+            val (current, steps, phase) = queue.poll()
+            if ((current.y == 0 || current.y == maxY) && current != target && current != start) {
+                continue
             }
+            var nextPhase = phase
+            if (current == target) {
+                if (phase == 0) {
+                    nextPhase = 1
+                } else if (phase == 2) {
+                    return steps
+                }
+            }
+            if (current == start && phase == 1) {
+                nextPhase = 2
+            }
+
             if (steps == cache.size) {
                 cache.add(cache.last().move())
             }
             val nextBlizzards = cache[steps]
-            current.adjacent().filterValues { it !in nextBlizzards && (it.x in 1 until maxX) && (it.y in 1 until maxY) }
-                .map { it.value to steps + 1 }
+            (current.adjacent().values + current).filter { it !in nextBlizzards && (it.x in 1 until maxX) && (it.y in 0..maxY) }
+                .map { State(it, steps + 1, nextPhase) }
                 .filter { it !in seen }
                 .forEach {
                     seen.add(it)
                     queue.offer(it)
                 }
-
-            if (current !in nextBlizzards) {
-                val next = current to steps + 1
-                if (next !in seen) {
-                    seen.add(next)
-                    queue.offer(next)
-                }
-            }
         }
 
         error("Impossible")

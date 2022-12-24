@@ -8,23 +8,18 @@ class Blizzards : AdventOfCodeTask {
     override fun run(part2: Boolean): Any {
         data class Blizzard(val direction: Direction, val position: Coordinate)
 
-        val blizzards = mutableListOf<Blizzard>()
         val map = readInputLines("24.txt")
         val maxY = map.size - 1
-        val maxX = map.first().trimEnd().length - 1
-        map.forEachIndexed { y, row ->
-            row.forEachIndexed { x, c ->
-                if (c == '.' || c == '#') {
-                    return@forEachIndexed
-                }
-                val direction = when (c) {
+        val maxX = map.first().length - 1
+        val blizzards = map.flatMapIndexed { y, row ->
+            row.mapIndexedNotNull { x, c ->
+                when (c) {
                     '^' -> Direction.UP
                     '>' -> Direction.RIGHT
                     '<' -> Direction.LEFT
                     'v' -> Direction.DOWN
-                    else -> error("Unknown direction $c")
-                }
-                blizzards.add(Blizzard(direction, Coordinate(x, y)))
+                    else -> null
+                }?.let { Blizzard(it, Coordinate(x, y)) }
             }
         }
 
@@ -41,35 +36,35 @@ class Blizzards : AdventOfCodeTask {
         operator fun List<Blizzard>.contains(position: Coordinate): Boolean = any { it.position == position }
 
         val start = Coordinate(1, 0)
-        val target = Coordinate(maxX - 1, maxY)
+        val end = Coordinate(maxX - 1, maxY)
 
         data class State(val position: Coordinate, val steps: Int, val phase: Int)
 
         val initial = State(start, 0, 0)
         val queue = PriorityQueue<State> { p1, p2 -> p1.steps - p2.steps }.apply { offer(initial) }
-        val cache = mutableListOf(blizzards.move())
+        val blizzardCache = mutableListOf(blizzards.move())
         val seen = mutableSetOf(initial)
         while (queue.isNotEmpty()) {
             val (current, steps, phase) = queue.poll()
-            if ((current.y == 0 || current.y == maxY) && current != target && current != start) {
+            if ((current.y == 0 || current.y == maxY) && current.x != start.x && current.x != end.x) {
                 continue
             }
             var nextPhase = phase
-            if (current == target) {
-                if (phase == 2 || !part2) {
-                    return steps
-                } else if (phase == 0) {
-                    nextPhase = 1
-                }
-            }
             if (current == start && phase == 1) {
                 nextPhase = 2
             }
-
-            if (steps == cache.size) {
-                cache.add(cache.last().move())
+            if (current == end) {
+                if (phase == 2 || !part2) {
+                    return steps
+                } else {
+                    nextPhase = 1
+                }
             }
-            val nextBlizzards = cache[steps]
+
+            if (steps == blizzardCache.size) {
+                blizzardCache.add(blizzardCache.last().move())
+            }
+            val nextBlizzards = blizzardCache[steps]
             (current.adjacent().values + current).filter { it !in nextBlizzards && (it.x in 1 until maxX) && (it.y in 0..maxY) }
                 .map { State(it, steps + 1, nextPhase) }
                 .filter { it !in seen }

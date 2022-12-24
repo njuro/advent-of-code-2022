@@ -4,7 +4,7 @@ import utils.readInputLines
 import java.util.PriorityQueue
 
 /** [https://adventofcode.com/2021/day/24] */
-class Day24 : AdventOfCodeTask {
+class Blizzards : AdventOfCodeTask {
     override fun run(part2: Boolean): Any {
         data class Blizzard(val direction: Direction, val position: Coordinate)
 
@@ -56,10 +56,10 @@ class Day24 : AdventOfCodeTask {
             }
             var nextPhase = phase
             if (current == target) {
-                if (phase == 0) {
-                    nextPhase = 1
-                } else if (phase == 2) {
+                if (phase == 2 || !part2) {
                     return steps
+                } else if (phase == 0) {
+                    nextPhase = 1
                 }
             }
             if (current == start && phase == 1) {
@@ -84,5 +84,5 @@ class Day24 : AdventOfCodeTask {
 }
 
 fun main() {
-    print(Day24().run(part2 = false))
+    print(Blizzards().run(part2 = false))
 }
